@@ -12,11 +12,11 @@ class MusicBackup
   HASHES = []
   
   def store_hash(name, value)
-    puts "#{name}: #{value}"
     HASHES << value
   end
 
   def initialize
+    #@basedir = File.expand_path("~/Music/iTunes/iTunes Media/Music/Uncle Tupelo/Anodyne")
     @basedir = File.expand_path("~/Music/iTunes/iTunes Media/Music/Uncle Tupelo/Anodyne")
     @music_extensions = %w{mp3 m4a aif}
 
@@ -60,7 +60,7 @@ class MusicBackup
       taglist[key] += 1
     end
 
-    puts json["SourceFile"]
+    print "."
 
     store_blob(json)
 
@@ -97,9 +97,9 @@ backup.music_files do |file|
   end
 end
 
+print "\n"
 hash = backup.db.commit
-
-p hash
+print "\n"
 
 #p MusicBackup::HASHES
 
