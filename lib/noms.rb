@@ -1,4 +1,5 @@
 require 'pp'
+require 'shellwords'
 
 module Noms
   class Database
@@ -11,7 +12,7 @@ module Noms
     end
 
     def ds
-      db "::" + datastore
+      db + "::" + datastore
     end
 
     def initialize(name, args = {})
@@ -29,10 +30,16 @@ module Noms
       @datastore = args[:datastore]
     end
 
-    def run(*cmd)
+    def old_run(*cmd)
       #text = cmd.join(" ")
       #system("noms " + text)
       system("noms", *cmd)
+    end
+
+    def run(*cmd)
+      text = cmd.collect { |a| Shellwords.escape(a.to_s) }.join(" ")
+      output = %x{noms #{text}}
+      return output
     end
   end
 end

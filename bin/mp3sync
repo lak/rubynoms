@@ -9,7 +9,13 @@ class MusicBackup
   attr_reader :basedir, :music_extensions, :taglist, :db
 
   MUSIC_EXTENSIONS = %w{mp3 m4a aif}
+  HASHES = []
   
+  def store_hash(name, value)
+    puts "#{name}: #{value}"
+    HASHES << value
+  end
+
   def initialize
     @basedir = File.expand_path("~/Music/iTunes/iTunes Media/Music/Uncle Tupelo/Anodyne")
     @music_extensions = %w{mp3 m4a aif}
@@ -18,7 +24,7 @@ class MusicBackup
     # And we'll also count the recurrence of each of them, just for fun
     @taglist = Hash.new { |hash, key| hash[key] = 0 }
 
-    @db = Noms::Database.new("mp3", :directory => "/tmp/mp3")
+    @db = Noms::Database.new("mp3db", :directory => "/tmp/mp3nomstesting")
   end
 
   def music_files
@@ -35,6 +41,12 @@ class MusicBackup
     end
   end
 
+  def store_blob(json)
+    hash = db.run("blob", "put", json["SourceFile"], db.db).chomp
+    store_hash("blob", hash)
+    json["BinaryFile"] = hash
+  end
+
   def store_file(json)
     # Make sure we have all of the keys
     struct_args = []
@@ -49,8 +61,12 @@ class MusicBackup
     end
     
     puts json["SourceFile"]
+
+    store_blob(json)
+
     args = ["struct", "new", "--name", "Song", db.db] + struct_args
-    db.run(*args)
+    hash = db.run(*args).chomp
+    store_hash("Struct", hash)
   end
 end
 
@@ -67,7 +83,7 @@ backup.music_files do |file|
   else
     escaped_text = files.collect { |f| Shellwords.escape(f) }.join(" ")
     # The -b gets the cover image
-    text = %x{exiftool -json #{escaped_text} 2>/dev/null}
+    text = %x{exiftool -b -json #{escaped_text} 2>/dev/null}
     json = JSON.parse(text) # It always returns an array
 
     # This is useful for debugging
@@ -80,7 +96,9 @@ backup.music_files do |file|
   end
 end
 
-p backup.taglist
+#p MusicBackup::HASHES
+
+#p backup.taglist
 
 #db = Noms::Database.new("mp3", :dir => "/tmp/noms_mp3_test")
 
