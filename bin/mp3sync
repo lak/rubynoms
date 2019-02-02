@@ -59,7 +59,7 @@ class MusicBackup
       end
       taglist[key] += 1
     end
-    
+
     puts json["SourceFile"]
 
     store_blob(json)
@@ -97,7 +97,9 @@ backup.music_files do |file|
   end
 end
 
-p backup.db.set_hash
+hash = backup.db.commit
+
+p hash
 
 #p MusicBackup::HASHES
 

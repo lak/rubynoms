@@ -16,6 +16,12 @@ module Noms
       end
     end
 
+    def commit(hash = nil)
+      hash ||= set_hash
+      commit_hash = run("commit", hash, ds).chomp
+      puts "Commit hash: #{commit_hash}"
+    end
+
     def db
       File.join(directory, name)
     end
