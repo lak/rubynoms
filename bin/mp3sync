@@ -48,14 +48,13 @@ class MusicBackup
     end
 
     # Disabled code to convert arguments into space-separated things
-    #json.collect { |key, value|
-    #  key.to_s + " " + Shellwords.escape(value.to_s)
-    #}
+    struct_args = json.collect { |key, value|
+      key.to_s + " " + Shellwords.escape(value.to_s)
+    }
 
     puts json["SourceFile"]
-    args = ["struct", "new", "--name", "Song", db.db] + struct_args
-    #args = ["struct", "new", "--name", "Song", db.db] + json_to_noms_struct(json)
-    db.run(*args)
+    #args = ["struct", "new", "--name", "Song", db.db] + struct_args
+    db.run("struct", "new", "--name", "Song", db.db, struct_args)
   end
 end
 

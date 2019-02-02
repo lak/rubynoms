@@ -28,8 +28,8 @@ module Noms
     end
 
     def run(*cmd)
-      p cmd
-      system("noms", *cmd)
+      text = cmd.join(" ")
+      system("noms " + text)
     end
   end
 end
