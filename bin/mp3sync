@@ -48,15 +48,9 @@ class MusicBackup
       taglist[key] += 1
     end
     
-    # Disabled code to convert arguments into space-separated things
-    struct_args_string = json.collect { |key, value|
-      key.to_s + " " + Shellwords.escape(value.to_s)
-    }
-
     puts json["SourceFile"]
     args = ["struct", "new", "--name", "Song", db.db] + struct_args
     db.run(*args)
-    #db.run("struct", "new", "--name", "Song", db.db, struct_args_string)
   end
 end
 
@@ -79,7 +73,6 @@ backup.music_files do |file|
     # This is useful for debugging
     #all_files += json
     json.each do |file|
-      puts "-" * 10
       backup.store_file(file)
     end
 
