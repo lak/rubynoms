@@ -1,0 +1,107 @@
+#!/usr/bin/ruby
+
+require 'json'
+require 'find'
+require 'shellwords'
+require 'noms'
+
+class MusicBackup
+  attr_reader :basedir, :music_extensions, :taglist, :db
+
+  MUSIC_EXTENSIONS = %w{mp3 m4a aif}
+  
+  def initialize
+    @basedir = File.expand_path("~/Music/iTunes/iTunes Media/Music/Uncle Tupelo/Anodyne")
+    @music_extensions = %w{mp3 m4a aif}
+
+    # We'll use this to keep track of what attributes to add to each file
+    # And we'll also count the recurrence of each of them, just for fun
+    @taglist = Hash.new { |hash, key| hash[key] = 0 }
+
+    @db = Noms::Database.new("mp3", :directory => "/tmp/mp3")
+  end
+
+  def music_files
+    skipped = Hash.new { |hash, key| hash[key] = 0 }
+
+    Find.find(basedir) do |path|
+      next unless FileTest.file?(path)
+      extension = path.split(".").pop
+      unless MUSIC_EXTENSIONS.include?(extension)
+        skipped[extension] += 1
+      end
+
+      yield path
+    end
+  end
+
+  def store_file(json)
+    # Make sure we have all of the keys
+    struct_args = []
+    json.each do |key, value|
+      struct_args << key
+      struct_args << value.to_s
+      if value == ''
+        json.delete(key)
+      end
+      taglist[key] += 1
+    end
+
+    # Disabled code to convert arguments into space-separated things
+    #json.collect { |key, value|
+    #  key.to_s + " " + Shellwords.escape(value.to_s)
+    #}
+
+    puts json["SourceFile"]
+    args = ["struct", "new", "--name", "Song", db.db] + struct_args
+    #args = ["struct", "new", "--name", "Song", db.db] + json_to_noms_struct(json)
+    db.run(*args)
+  end
+end
+
+# We're going to chunk the files to ten at a time
+files = []
+
+all_files = []
+
+backup = MusicBackup.new
+
+backup.music_files do |file|
+  if files.length < 10
+    files << file
+  else
+    escaped_text = files.collect { |f| Shellwords.escape(f) }.join(" ")
+    # The -b gets the cover image
+    text = %x{exiftool -json #{escaped_text} 2>/dev/null}
+    json = JSON.parse(text) # It always returns an array
+
+    # This is useful for debugging
+    #all_files += json
+    json.each do |file|
+      puts "-" * 10
+      backup.store_file(file)
+    end
+
+    files.clear
+  end
+end
+
+p backup.taglist
+
+#db = Noms::Database.new("mp3", :dir => "/tmp/noms_mp3_test")
+
+
+
+# noms blob put <file> <db>
+
+# noms struct new --name Song Album 'G-Sides' Genre 'Electrronica/...' Duration 210 Title '19-2000' Blob @<ds>.value
+# noms struct new --name Song ~/mydb Album 'G-Sides' Genre 'Electronica/Dance' Duration 210 Title '19-2000 (Soulchild Remix)' Blob @mp3.value
+#
+# nomw show <>
+#
+# noms struct set <mydb> <hash> Blob @ds.value
+#
+# noms set new ~/mydb @#ibikfkg09vps4pk101cg80suj5bg037p
+#
+# noms commit '#iljggv6mt55tbl9qt6canr66q17m5gh0' ~/mydb::my-mp3s
+# New head #478didbggbpn5gnnscpp1prldqpck3m7
