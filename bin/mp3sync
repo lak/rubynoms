@@ -15,9 +15,13 @@ class MusicBackup
     HASHES << value
   end
 
-  def initialize
+  def initialize(dir)
     #@basedir = File.expand_path("~/Music/iTunes/iTunes Media/Music/Uncle Tupelo/Anodyne")
-    @basedir = File.expand_path("~/Music/iTunes/iTunes Media/Music/Uncle Tupelo/Anodyne")
+    #@basedir = File.expand_path("~/Music/iTunes/iTunes Media/Music/")
+    #
+    
+    fail "No dir #{dir.inspect}" unless FileTest.directory?(dir)
+    @basedir = dir
     @music_extensions = %w{mp3 m4a aif}
 
     # We'll use this to keep track of what attributes to add to each file
@@ -76,7 +80,7 @@ files = []
 
 all_files = []
 
-backup = MusicBackup.new
+backup = MusicBackup.new(ARGV[0])
 
 backup.music_files do |file|
   if files.length < 10
@@ -84,7 +88,7 @@ backup.music_files do |file|
   else
     escaped_text = files.collect { |f| Shellwords.escape(f) }.join(" ")
     # The -b gets the cover image
-    text = %x{exiftool -b -json #{escaped_text} 2>/dev/null}
+    text = %x{exiftool -json #{escaped_text} 2>/dev/null}
     json = JSON.parse(text) # It always returns an array
 
     # This is useful for debugging
