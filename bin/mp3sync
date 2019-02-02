@@ -66,6 +66,7 @@ class MusicBackup
 
     args = ["struct", "new", "--name", "Song", db.db] + struct_args
     hash = db.run(*args).chomp
+    db.add_to_set(hash)
     store_hash("Struct", hash)
   end
 end
@@ -95,6 +96,8 @@ backup.music_files do |file|
     files.clear
   end
 end
+
+p backup.db.set_hash
 
 #p MusicBackup::HASHES
 

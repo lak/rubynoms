@@ -5,7 +5,16 @@ module Noms
   class Database
     attr_reader :name, :directory, :datastore
 
-    attr_accessor :directory
+    attr_accessor :directory, :set_hash
+
+    def add_to_set(new_hash)
+      if set_hash
+        new_hash = run("set", "insert", db + "::" + set_hash, new_hash).chomp
+        @set_hash = new_hash
+      else
+        make_set(new_hash)
+      end
+    end
 
     def db
       File.join(directory, name)
@@ -28,6 +37,12 @@ module Noms
 
       args[:datastore] ||= "master"
       @datastore = args[:datastore]
+    end
+
+    def make_set(first_hash)
+      hash = run("set", "new", db, first_hash)
+
+      @set_hash = hash.chomp
     end
 
     def old_run(*cmd)
