@@ -58,7 +58,11 @@ class MusicBackup
       if value == ''
         json.delete(key)
       else
-        struct_args << key
+        # XXX This won't work in the long term, because it's not isomorphic.
+        # We need to record this shift, and the undo it when moving in the other direction.
+        # But as a proof of concept it's ok.
+        #   This is necessary because '-' is invalid in field names.
+        struct_args << key.gsub("-", "_")
         struct_args << value.to_s
       end
       taglist[key] += 1
