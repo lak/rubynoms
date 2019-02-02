@@ -1,0 +1,27 @@
+#!/usr/bin/ruby
+
+require 'benchmark'
+
+
+def store_output(name, run, output)
+  File.open("/tmp/#{name}_#{run}.txt", "w") { |f|
+    f.print output
+  }
+end
+
+def run(name, dir)
+  output = nil
+
+  short_name = name.gsub(" ", "_")
+  puts name
+  puts Benchmark.measure { output = %x{bin/mp3sync "#{File.expand_path(dir)}" 2>&1} }
+  store_output(short_name, 1, output)
+  puts Benchmark.measure { output = %x{bin/mp3sync "#{File.expand_path(dir)}" 2>&1} }
+  store_output(short_name, 2, output)
+  system("mv /tmp/mp3nomstesting /tmp/#{short_name}")
+end
+
+
+run("One album", "~/Music/iTunes/iTunes Media/Music/Uncle Tupelo/Anodyne")
+run("One artist", "~/Music/iTunes/iTunes Media/Music/Uncle Tupelo")
+run("Full dir", "~/Music/iTunes/iTunes Media/Music")
