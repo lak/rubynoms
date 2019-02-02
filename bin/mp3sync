@@ -39,22 +39,24 @@ class MusicBackup
     # Make sure we have all of the keys
     struct_args = []
     json.each do |key, value|
-      struct_args << key
-      struct_args << value.to_s
       if value == ''
         json.delete(key)
+      else
+        struct_args << key
+        struct_args << value.to_s
       end
       taglist[key] += 1
     end
-
+    
     # Disabled code to convert arguments into space-separated things
-    struct_args = json.collect { |key, value|
+    struct_args_string = json.collect { |key, value|
       key.to_s + " " + Shellwords.escape(value.to_s)
     }
 
     puts json["SourceFile"]
-    #args = ["struct", "new", "--name", "Song", db.db] + struct_args
-    db.run("struct", "new", "--name", "Song", db.db, struct_args)
+    args = ["struct", "new", "--name", "Song", db.db] + struct_args
+    db.run(*args)
+    #db.run("struct", "new", "--name", "Song", db.db, struct_args_string)
   end
 end
 

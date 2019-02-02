@@ -1,3 +1,5 @@
+require 'pp'
+
 module Noms
   class Database
     attr_reader :name, :directory, :datastore
@@ -28,8 +30,9 @@ module Noms
     end
 
     def run(*cmd)
-      text = cmd.join(" ")
-      system("noms " + text)
+      #text = cmd.join(" ")
+      #system("noms " + text)
+      system("noms", *cmd)
     end
   end
 end
