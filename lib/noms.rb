@@ -9,7 +9,7 @@ module Noms
 
     def add_to_set(new_hash)
       if set_hash
-        new_hash = run("set", "insert", db + "::" + set_hash, new_hash).chomp
+        new_hash = run("set", "insert", db + "::" + set_hash, new_hash)
         @set_hash = new_hash
       else
         make_set(new_hash)
@@ -18,7 +18,7 @@ module Noms
 
     def commit(hash = nil)
       hash ||= set_hash
-      commit_hash = run("commit", hash, ds).chomp
+      commit_hash = run("commit", hash, ds)
       puts "Commit hash: #{commit_hash}"
     end
 
@@ -48,7 +48,7 @@ module Noms
     def make_set(first_hash)
       hash = run("set", "new", db, first_hash)
 
-      @set_hash = hash.chomp
+      @set_hash = hash
     end
 
     def old_run(*cmd)
@@ -60,7 +60,7 @@ module Noms
     def run(*cmd)
       text = cmd.collect { |a| Shellwords.escape(a.to_s) }.join(" ")
       output = %x{noms #{text}}
-      return output
+      return output.chomp
     end
   end
 end

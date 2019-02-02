@@ -42,7 +42,7 @@ class MusicBackup
   end
 
   def store_blob(json)
-    hash = db.run("blob", "put", json["SourceFile"], db.db).chomp
+    hash = db.run("blob", "put", json["SourceFile"], db.db)
     store_hash("blob", hash)
     json["BinaryFile"] = hash
   end
@@ -65,7 +65,7 @@ class MusicBackup
     store_blob(json)
 
     args = ["struct", "new", "--name", "Song", db.db] + struct_args
-    hash = db.run(*args).chomp
+    hash = db.run(*args)
     db.add_to_set(hash)
     store_hash("Struct", hash)
   end
