@@ -84,7 +84,11 @@ files = []
 
 all_files = []
 
-backup = MusicBackup.new(ARGV[0])
+unless dir = ARGV[0]
+  fail "Must provide directory of MP3s to store"
+end
+backup = MusicBackup.new(dir)
+
 
 backup.music_files do |file|
   if files.length < 10
