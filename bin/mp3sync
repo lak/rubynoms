@@ -52,11 +52,17 @@ class MusicBackup
   end
 
   def store_file(json)
+    store_blob(json)
+
     # Make sure we have all of the keys
     struct_args = []
     json.each do |key, value|
       if value == ''
         json.delete(key)
+      elsif key == 'FileAccessDate'
+        # TODO should probably whitelist the attributes to use to those that are
+        # meaningful.
+        next
       else
         # XXX This won't work in the long term, because it's not isomorphic.
         # We need to record this shift, and the undo it when moving in the other direction.
@@ -69,8 +75,6 @@ class MusicBackup
     end
 
     print "."
-
-    store_blob(json)
 
     args = ["struct", "new", "--name", "Song", db.db] + struct_args
     hash = db.run(*args)
