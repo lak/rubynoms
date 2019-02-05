@@ -60,6 +60,11 @@ module Noms
     def run(*cmd)
       text = cmd.collect { |a| Shellwords.escape(a.to_s) }.join(" ")
       output = %x{noms #{text}}
+      unless $? == 0
+        print "noms returned non-zero, exiting ruby\n"
+        print output + "\n"
+        exit
+      end
       return output.chomp
     end
   end
